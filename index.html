@@ -1,364 +1,329 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<style>
-h1 {
-	font: 70px Tahoma, Helvetica, Arial, Sans-Serif;
-	text-align: center;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Made - Culinary Archive</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,400;1,6..96,700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000000;
+            --surface: #0a0a0a;
+            --gold: #c5a059;
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+            --border: #27272a;
+            --border-dim: #18181b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            selection-background: var(--gold);
+            selection-color: black;
+        }
+
+        .serif { font-family: 'Bodoni Moda', serif; font-style: italic; }
+
+        /* --- Navigation Logic (Radio Hack) --- */
+        input[type="radio"] { display: none; }
+        
+        .page { display: none; width: 100%; min-height: 720px; }
+
+        #nav-cover:checked ~ .app-container #page-cover { display: flex; }
+        #nav-index:checked ~ .app-container #page-index { display: block; }
+        #nav-recipe-1:checked ~ .app-container #page-recipe-1 { display: flex; }
+
+        /* --- Layout Container --- */
+        .wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1280px;
+            background: var(--surface);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-dim);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- Cover Page --- */
+        .cover-hero {
+            position: relative;
+            height: 720px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .cover-bg {
+            position: absolute;
+            inset: 0;
+            background: url('https://images.unsplash.com/photo-1543353071-873f17a7a088?q=80&w=1600&auto=format&fit=crop');
+            background-size: cover;
+            filter: grayscale(1) opacity(0.4);
+        }
+
+        .cover-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, black, transparent, black);
+        }
+
+        .sketch-pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.1;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 1px, #fff 1px, #fff 2px);
+            pointer-events: none;
+        }
+
+        .cover-content { position: relative; z-index: 10; }
+        .vol-tag { color: var(--gold); letter-spacing: 0.4em; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .main-title { font-size: 4.5rem; color: white; margin: 1rem 0; }
+        
+        .btn-open {
+            margin-top: 3rem;
+            padding: 0.75rem 2rem;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: white;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            cursor: pointer;
+            transition: 0.5s;
+        }
+
+        .btn-open:hover { border-color: var(--gold); }
+
+        /* --- Index Page --- */
+        .index-container { padding: 4rem; }
+        .index-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid var(--border-dim);
+            padding-bottom: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .grid-directory {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+        }
+
+        .cat-title {
+            color: var(--gold);
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .recipe-list { list-style: none; }
+        .recipe-item { 
+            margin-bottom: 1rem; 
+            cursor: pointer; 
+            transition: 0.3s;
+        }
+
+        .recipe-item label { cursor: pointer; display: block; }
+        .recipe-item:hover .recipe-name { color: var(--gold); }
+        
+        .recipe-name { font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .recipe-meta { font-size: 10px; color: #52525b; margin-top: 4px; }
+
+        /* --- Recipe Page --- */
+        .recipe-split { height: 720px; display: flex; }
+        .visual-half { width: 50%; position: relative; overflow: hidden; }
+        .visual-half img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(0.3) brightness(0.7);
+            transition: 1s;
+        }
+        .visual-half:hover img { filter: grayscale(0) brightness(0.8); }
+
+        .info-half {
+            width: 50%;
+            background: var(--surface);
+            padding: 4rem;
+            overflow-y: auto;
+            border-left: 1px solid var(--border-dim);
+        }
+
+        .info-half::-webkit-scrollbar { width: 4px; }
+        .info-half::-webkit-scrollbar-thumb { background: var(--border-dim); }
+
+        .tag-strip { display: flex; gap: 0.5rem; margin: 2rem 0; border-top: 1px solid var(--border-dim); border-bottom: 1px solid var(--border-dim); padding: 1rem 0; }
+        .tag {
+            padding: 4px 12px;
+            background: rgba(24, 24, 27, 0.5);
+            border: 1px solid var(--border-dim);
+            border-radius: 99px;
+            font-size: 10px;
+            font-weight: bold;
+            color: var(--text-muted);
+        }
+
+        .ingredient-row {
+            display: flex;
+            border-bottom: 1px solid rgba(39, 39, 42, 0.5);
+            padding: 8px 0;
+            font-size: 14px;
+        }
+        .qty { width: 80px; font-weight: bold; }
+        .item { color: var(--text-muted); }
+
+        .step-item { display: flex; gap: 1.5rem; margin-bottom: 2.5rem; }
+        .step-num { color: var(--gold); font-size: 1.25rem; }
+        .step-text { font-size: 14px; line-height: 1.6; color: #d4d4d8; }
+
+        /* --- Bottom Nav --- */
+        .bottom-nav {
+            margin-top: 2rem;
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-icon {
+            color: #52525b;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: 0.3s;
+        }
+
+        .nav-icon:hover { color: white; }
+        #nav-cover:checked ~ .wrapper .icon-home,
+        #nav-index:checked ~ .wrapper .icon-book { color: var(--gold); }
+    </style>
 </head>
-  
 <body>
 
-<h1>Rafal Decowski</h1>
-import React, { useState, useEffect } from 'react';
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  Clock, 
-  Leaf, 
-  Award, 
-  ChefHat, 
-  Home, 
-  BookOpen,
-  ArrowRight
-} from 'lucide-react';
+    <input type="radio" name="navigation" id="nav-cover" checked>
+    <input type="radio" name="navigation" id="nav-index">
+    <input type="radio" name="navigation" id="nav-recipe-1">
 
-const App = () => {
-  const [currentPage, setCurrentPage] = useState('cover');
-  const [history, setHistory] = useState(['cover']);
-
-  const navigateTo = (page) => {
-    setHistory([...history, page]);
-    setCurrentPage(page);
-    window.scrollTo(0, 0);
-  };
-
-  const goBack = () => {
-    if (history.length > 1) {
-      const newHistory = [...history];
-      newHistory.pop();
-      setHistory(newHistory);
-      setCurrentPage(newHistory[newHistory.length - 1]);
-    } else {
-      setCurrentPage('index');
-    }
-  };
-
-  // Modern UI Colors
-  const colors = {
-    bg: '#000000',
-    surface: '#0a0a0a',
-    gold: '#c5a059',
-    textMain: '#ffffff',
-    textMuted: '#a1a1aa',
-    border: '#27272a'
-  };
-
-  const recipes = {
-    'avocado-toast': {
-      category: 'BREAKFAST',
-      title: 'Avocado Toast with Poached Egg',
-      image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?q=80&w=1200&auto=format&fit=crop',
-      time: '15m',
-      tags: ['Veg', 'Protein', 'Easy'],
-      ingredients: [
-        { qty: '2', unit: 'Slices', item: 'Sourdough bread' },
-        { qty: '1', unit: 'Large', item: 'Ripe avocado' },
-        { qty: '2', unit: 'Large', item: 'Fresh eggs' },
-        { qty: '1', unit: 'tsp', item: 'Chili flakes' },
-        { qty: '1/2', unit: 'tsp', item: 'Sea salt' },
-        { qty: '1', unit: 'tbsp', item: 'Lemon juice' }
-      ],
-      steps: [
-        'Toast the sourdough slices until golden and crisp.',
-        'Mash the avocado in a small bowl with lemon juice and salt.',
-        'Bring a pot of water to a gentle simmer with a splash of vinegar. Create a vortex and drop the eggs in for 3 minutes.',
-        'Spread the avocado mix generously over the toast.',
-        'Top with poached eggs and a sprinkle of chili flakes.'
-      ]
-    },
-    'french-onion': {
-      category: 'SOUPS',
-      title: 'French Onion Soup',
-      image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?q=80&w=1200&auto=format&fit=crop',
-      time: '1.5h',
-      tags: ['Traditional', 'Slow Cook'],
-      ingredients: [
-        { qty: '6', unit: 'Large', item: 'Yellow onions, sliced' },
-        { qty: '4', unit: 'tbsp', item: 'Unsalted butter' },
-        { qty: '1', unit: 'cup', item: 'Dry white wine' },
-        { qty: '6', unit: 'cups', item: 'Beef stock' },
-        { qty: '1', unit: 'tbsp', item: 'Fresh thyme' },
-        { qty: '1', unit: 'block', item: 'Gruyère cheese' }
-      ],
-      steps: [
-        'Caramelize onions in butter over low heat for 45 minutes until deep brown.',
-        'Deglaze the pan with white wine, scraping up the browned bits.',
-        'Add beef stock and thyme; simmer for another 30 minutes.',
-        'Ladle into ramekins, top with a baguette slice and a thick layer of Gruyère.',
-        'Broil until the cheese is bubbling and slightly charred.'
-      ]
-    },
-    'mongolian-beef': {
-      category: 'DINNER',
-      title: 'Mongolian Beef',
-      image: 'https://images.unsplash.com/photo-1534939561126-755ecf1588b0?q=80&w=1200&auto=format&fit=crop',
-      time: '30m',
-      tags: ['High Protein', 'Savory'],
-      ingredients: [
-        { qty: '1', unit: 'lb', item: 'Flank steak, sliced thin' },
-        { qty: '1/4', unit: 'cup', item: 'Cornstarch' },
-        { qty: '2', unit: 'tsp', item: 'Ginger, minced' },
-        { qty: '1', unit: 'tbsp', item: 'Garlic, minced' },
-        { qty: '1/2', unit: 'cup', item: 'Soy sauce' },
-        { qty: '1/2', unit: 'cup', item: 'Brown sugar' }
-      ],
-      steps: [
-        'Coat sliced steak in cornstarch and let sit for 10 minutes.',
-        'In a small pan, simmer soy sauce, water, and brown sugar until thickened.',
-        'Flash fry the beef in hot oil until crispy on the edges.',
-        'Toss the fried beef with the ginger, garlic, and prepared sauce.',
-        'Serve immediately over steamed rice with green onions.'
-      ]
-    },
-    'mushroom-risotto': {
-      category: 'VEGETARIAN',
-      title: 'Mushroom Risotto',
-      image: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?q=80&w=1200&auto=format&fit=crop',
-      time: '45m',
-      tags: ['Veg', 'Gourmet', 'GF'],
-      ingredients: [
-        { qty: '1.5', unit: 'cups', item: 'Arborio rice' },
-        { qty: '1', unit: 'lb', item: 'Mixed mushrooms' },
-        { qty: '5', unit: 'cups', item: 'Warm vegetable stock' },
-        { qty: '1/2', unit: 'cup', item: 'Parmesan, grated' },
-        { qty: '2', unit: 'tbsp', item: 'Truffle oil' }
-      ],
-      steps: [
-        'Sauté mushrooms in butter until golden and set aside.',
-        'Toast the rice in the same pan until the edges are translucent.',
-        'Add warm stock one ladle at a time, stirring constantly until absorbed.',
-        'Once rice is al dente, stir in mushrooms, parmesan, and butter.',
-        'Finish with a drizzle of truffle oil.'
-      ]
-    }
-    // Additional recipes would follow this structure
-  };
-
-  const categories = {
-    'Breakfast': [
-      { id: 'avocado-toast', title: 'Avocado Toast', meta: 'Veg • 15m' },
-      { id: 'oatmeal', title: 'Oatmeal', meta: 'Vegan • 10m' },
-      { id: 'omelette', title: 'Omelette', meta: 'Keto • 12m' },
-      { id: 'pancakes', title: 'Pancakes', meta: 'Sweet • 20m' }
-    ],
-    'Soups': [
-      { id: 'french-onion', title: 'French Onion', meta: 'Trad • 1.5h' },
-      { id: 'white-bean', title: 'White Bean', meta: 'Veg • 40m' },
-      { id: 'broccoli-cheddar', title: 'Broccoli Cheddar', meta: 'Easy • 30m' },
-      { id: 'butternut-squash', title: 'Butternut Squash', meta: 'GF • 45m' }
-    ],
-    'Lunch': [
-      { id: 'cutlet-sandwich', title: 'Cutlet Sandwich', meta: 'Protein • 20m' },
-      { id: 'kale-salad', title: 'Kale Salad', meta: 'Healthy • 15m' },
-      { id: 'polski-obiad', title: 'Polski Obiad', meta: 'Trad • 1h' }
-    ],
-    'Dinner': [
-      { id: 'mongolian-beef', title: 'Mongolian Beef', meta: 'Keto • 30m' },
-      { id: 'beef-stew', title: 'Slow Beef Stew', meta: 'Slow • 4h' },
-      { id: 'arroz-pollo', title: 'Arroz con Pollo', meta: 'GF • 50m' },
-      { id: 'risotto', title: 'Saffron Risotto', meta: 'Veg • 45m' },
-      { id: 'bolognese', title: 'Bolognese', meta: 'Trad • 3h' }
-    ]
-  };
-
-  const CoverPage = () => (
-    <div className="relative w-full h-[720px] bg-black overflow-hidden flex items-center justify-center">
-      {/* Background with Sketch Overlay */}
-      <div 
-        className="absolute inset-0 opacity-40 grayscale"
-        style={{ 
-          backgroundImage: 'url(https://images.unsplash.com/photo-1543353071-873f17a7a088?q=80&w=1600&auto=format&fit=crop)',
-          backgroundSize: 'cover'
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black" />
-      
-      {/* Sketch Overlay Pattern */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 1px, #fff 1px, #fff 2px)' }} />
-
-      <div className="relative z-10 text-center space-y-4">
-        <span className="text-[#c5a059] tracking-[0.4em] text-xs font-bold uppercase">Archive Vol. 01</span>
-        <h1 className="text-7xl font-serif italic text-white leading-tight">Home Made</h1>
-        <p className="text-zinc-500 font-sans tracking-widest uppercase text-[10px] mt-4">The Culinary Collection for the Modern Kitchen</p>
-        <button 
-          onClick={() => navigateTo('index')}
-          className="mt-12 px-8 py-3 border border-zinc-800 hover:border-[#c5a059] transition-all duration-500 group"
-        >
-          <span className="text-white text-xs tracking-widest flex items-center gap-2">
-            OPEN ARCHIVE <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-          </span>
-        </button>
-      </div>
-    </div>
-  );
-
-  const IndexPage = () => (
-    <div className="w-full min-h-[720px] bg-[#0a0a0a] p-16">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-end border-b border-zinc-900 pb-8 mb-12">
-          <h2 className="text-4xl font-serif italic text-white">Directory</h2>
-          <span className="text-[#c5a059] text-[10px] tracking-widest font-bold uppercase">M M X X V</span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          {Object.entries(categories).map(([cat, items]) => (
-            <div key={cat} className="space-y-6">
-              <h3 className="text-[#c5a059] text-[10px] tracking-[0.3em] font-bold uppercase">{cat}</h3>
-              <ul className="space-y-4">
-                {items.map(item => (
-                  <li key={item.id} className="group cursor-pointer" onClick={() => navigateTo(item.id)}>
-                    <div className="text-white text-sm font-sans group-hover:text-[#c5a059] transition-colors flex items-center justify-between">
-                      {item.title}
-                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+    <div class="wrapper">
+        <div class="app-container">
+            
+            <section class="page" id="page-cover">
+                <div class="cover-hero">
+                    <div class="cover-bg"></div>
+                    <div class="cover-overlay"></div>
+                    <div class="sketch-pattern"></div>
+                    <div class="cover-content">
+                        <span class="vol-tag">Archive Vol. 01</span>
+                        <h1 class="main-title serif">Home Made</h1>
+                        <p class="recipe-meta" style="letter-spacing: 0.2em; text-transform: uppercase;">The Culinary Collection for the Modern Kitchen</p>
+                        <label for="nav-index">
+                            <button class="btn-open">OPEN ARCHIVE &rarr;</button>
+                        </label>
                     </div>
-                    <div className="text-zinc-600 text-[10px] font-sans mt-1">{item.meta}</div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const RecipePage = ({ id }) => {
-    const data = recipes[id] || recipes['avocado-toast']; // Fallback for demo
-    
-    return (
-      <div className="w-full h-[720px] bg-black flex overflow-hidden">
-        {/* Visual Half */}
-        <div className="w-1/2 h-full relative group">
-          <img 
-            src={data.image} 
-            alt={data.title}
-            className="w-full h-full object-cover grayscale-[0.3] brightness-75 group-hover:grayscale-0 transition-all duration-1000"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/40" />
-          
-          <button 
-            onClick={goBack}
-            className="absolute top-8 left-8 p-3 bg-black/50 backdrop-blur-sm border border-white/10 text-white hover:bg-white hover:text-black transition-all"
-          >
-            <ChevronLeft size={20} />
-          </button>
-        </div>
-
-        {/* Information Half */}
-        <div className="w-1/2 h-full bg-[#0a0a0a] overflow-y-auto custom-scrollbar p-12 lg:p-16 border-l border-zinc-900">
-          <div className="space-y-2 mb-8">
-            <span className="text-[#c5a059] tracking-[0.3em] text-[10px] font-bold uppercase">{data.category}</span>
-            <h2 className="text-4xl lg:text-5xl font-serif italic text-white leading-tight">{data.title}</h2>
-          </div>
-
-          {/* Meta Strip */}
-          <div className="flex flex-wrap gap-4 mb-12 py-4 border-y border-zinc-900">
-            <div className="flex items-center gap-2 px-3 py-1 bg-zinc-900/50 rounded-full border border-zinc-800">
-              <Clock size={12} className="text-[#c5a059]" />
-              <span className="text-white text-[10px] font-sans font-bold">{data.time}</span>
-            </div>
-            {data.tags.map(tag => (
-              <div key={tag} className="flex items-center gap-2 px-3 py-1 bg-zinc-900/50 rounded-full border border-zinc-800">
-                <span className="text-zinc-400 text-[10px] font-sans font-bold tracking-wider">{tag}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Ingredients Grid */}
-          <div className="mb-12">
-            <h4 className="text-zinc-600 text-[10px] tracking-[0.2em] font-bold uppercase mb-6">Ingredients</h4>
-            <div className="grid grid-cols-1 gap-y-3">
-              {data.ingredients.map((ing, idx) => (
-                <div key={idx} className="flex items-baseline gap-2 border-b border-zinc-900/50 pb-2">
-                  <span className="text-white font-bold font-sans text-sm w-16">{ing.qty} {ing.unit}</span>
-                  <span className="text-zinc-400 font-sans text-sm">{ing.item}</span>
                 </div>
-              ))}
-            </div>
-          </div>
+            </section>
 
-          {/* Process Block */}
-          <div className="mb-8">
-            <h4 className="text-zinc-600 text-[10px] tracking-[0.2em] font-bold uppercase mb-8">The Process</h4>
-            <div className="space-y-10">
-              {data.steps.map((step, idx) => (
-                <div key={idx} className="flex gap-6 group">
-                  <div className="flex-none">
-                    <span className="text-[#c5a059] font-serif italic text-xl">0{idx + 1}</span>
-                  </div>
-                  <p className="text-zinc-300 font-sans text-sm leading-relaxed pt-1 group-hover:text-white transition-colors">
-                    {step}
-                  </p>
+            <section class="page" id="page-index">
+                <div class="index-container">
+                    <div class="index-header">
+                        <h2 class="serif" style="font-size: 2.5rem;">Directory</h2>
+                        <span class="vol-tag" style="font-size: 10px;">M M X X V</span>
+                    </div>
+
+                    <div class="grid-directory">
+                        <div>
+                            <h3 class="cat-title">Breakfast</h3>
+                            <ul class="recipe-list">
+                                <li class="recipe-item">
+                                    <label for="nav-recipe-1">
+                                        <div class="recipe-name">Avocado Toast <span>&rarr;</span></div>
+                                        <div class="recipe-meta">Veg • 15m</div>
+                                    </label>
+                                </li>
+                                <li class="recipe-item"><div class="recipe-name">Oatmeal</div><div class="recipe-meta">Vegan • 10m</div></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="cat-title">Soups</h3>
+                            <ul class="recipe-list">
+                                <li class="recipe-item"><div class="recipe-name">French Onion</div><div class="recipe-meta">Trad • 1.5h</div></li>
+                                <li class="recipe-item"><div class="recipe-name">White Bean</div><div class="recipe-meta">Veg • 40m</div></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="cat-title">Dinner</h3>
+                            <ul class="recipe-list">
+                                <li class="recipe-item"><div class="recipe-name">Mongolian Beef</div><div class="recipe-meta">Keto • 30m</div></li>
+                                <li class="recipe-item"><div class="recipe-name">Saffron Risotto</div><div class="recipe-meta">Veg • 45m</div></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-              ))}
-            </div>
-          </div>
+            </section>
 
-          {/* Bottom Branding */}
-          <div className="pt-12 mt-12 border-t border-zinc-900 flex justify-between items-center opacity-30">
-            <span className="font-serif italic text-white">Home Made</span>
-            <span className="text-[10px] tracking-widest text-zinc-500 uppercase">Archive No. {Math.floor(Math.random() * 9000) + 1000}</span>
-          </div>
-        </div>
-      </div>
-    );
-  };
+            <section class="page" id="page-recipe-1">
+                <div class="recipe-split">
+                    <div class="visual-half">
+                        <img src="https://images.unsplash.com/photo-1525351484163-7529414344d8?q=80&w=1200&auto=format&fit=crop" alt="Avocado Toast">
+                        <label for="nav-index" style="position:absolute; top: 2rem; left: 2rem; background: rgba(0,0,0,0.5); padding: 10px 15px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; color: white;">&larr;</label>
+                    </div>
+                    <div class="info-half">
+                        <span class="cat-title">BREAKFAST</span>
+                        <h2 class="serif" style="font-size: 3rem; margin-top: 0.5rem;">Avocado Toast</h2>
+                        
+                        <div class="tag-strip">
+                            <div class="tag">15m</div>
+                            <div class="tag">VEG</div>
+                            <div class="tag">PROTEIN</div>
+                        </div>
 
-  return (
-    <div className="min-h-screen bg-black text-white selection:bg-[#c5a059] selection:text-black">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,400;1,6..96,700&family=Inter:wght@300;400;600;700&display=swap');
-        
-        body { font-family: 'Inter', sans-serif; }
-        .font-serif { font-family: 'Bodoni Moda', serif; }
-        
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #18181b; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #c5a059; }
-      `}</style>
+                        <div style="margin-bottom: 3rem;">
+                            <h4 class="cat-title" style="color: #52525b; margin-bottom: 1rem;">Ingredients</h4>
+                            <div class="ingredient-row"><span class="qty">2 Slices</span> <span class="item">Sourdough bread</span></div>
+                            <div class="ingredient-row"><span class="qty">1 Large</span> <span class="item">Ripe avocado</span></div>
+                            <div class="ingredient-row"><span class="qty">2 Large</span> <span class="item">Fresh eggs</span></div>
+                        </div>
 
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 md:p-8">
-        <div className="w-full max-w-[1280px] shadow-2xl shadow-black ring-1 ring-zinc-900 rounded-sm overflow-hidden bg-[#0a0a0a]">
-          {currentPage === 'cover' && <CoverPage />}
-          {currentPage === 'index' && <IndexPage />}
-          {!['cover', 'index'].includes(currentPage) && <RecipePage id={currentPage} />}
+                        <div>
+                            <h4 class="cat-title" style="color: #52525b; margin-bottom: 2rem;">The Process</h4>
+                            <div class="step-item">
+                                <div class="step-num serif">01</div>
+                                <p class="step-text">Toast the sourdough slices until golden and crisp.</p>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-num serif">02</div>
+                                <p class="step-text">Mash the avocado in a small bowl with lemon juice and salt.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </div>
-        
-        {/* Navigation Bar */}
-        <div className="mt-8 flex items-center gap-8">
-          <button 
-            onClick={() => navigateTo('cover')}
-            className={`p-2 transition-colors ${currentPage === 'cover' ? 'text-[#c5a059]' : 'text-zinc-600 hover:text-white'}`}
-          >
-            <Home size={18} />
-          </button>
-          <button 
-            onClick={() => navigateTo('index')}
-            className={`p-2 transition-colors ${currentPage === 'index' ? 'text-[#c5a059]' : 'text-zinc-600 hover:text-white'}`}
-          >
-            <BookOpen size={18} />
-          </button>
+
+        <div class="bottom-nav">
+            <label for="nav-cover" class="nav-icon icon-home">⌂</label>
+            <label for="nav-index" class="nav-icon icon-book">▤</label>
         </div>
-      </div>
     </div>
-  );
-};
-
-export default App;
 
 </body>
 </html>
